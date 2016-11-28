@@ -31,7 +31,7 @@
 			link: function ( scope, element, attrs ) {
 				//tree id
 				var treeId = attrs.treeId;
-			
+
 				//tree model
 				var treeModel = attrs.treeModel;
 
@@ -44,6 +44,8 @@
 				//children
 				var nodeChildren = attrs.nodeChildren || 'children';
 
+				var useCheckboxes = !!attrs.useCheckboxes;
+
 				//tree template
 				var template =
 					'<ul>' +
@@ -51,8 +53,9 @@
 							'<i class="collapsed" data-ng-show="node.' + nodeChildren + '.length && node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
 							'<i class="expanded" data-ng-show="node.' + nodeChildren + '.length && !node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
 							'<i class="normal" data-ng-hide="node.' + nodeChildren + '.length"></i> ' +
+							(useCheckboxes ? '<input type="checkbox" data-ng-model="node.isChecked" data-ng-disabled="node.disabled" data-ng-click="node.setChecked()">' : '') +
 							'<span data-ng-class="node.selected" data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}</span>' +
-							'<div data-ng-hide="node.collapsed" data-tree-id="' + treeId + '" data-tree-model="node.' + nodeChildren + '" data-node-id=' + nodeId + ' data-node-label=' + nodeLabel + ' data-node-children=' + nodeChildren + '></div>' +
+							'<div data-ng-hide="node.collapsed" data-use-checkboxes="'+ useCheckboxes +'" data-tree-id="' + treeId + '" data-tree-model="node.' + nodeChildren + '" data-node-id=' + nodeId + ' data-node-label=' + nodeLabel + ' data-node-children=' + nodeChildren + '></div>' +
 						'</li>' +
 					'</ul>';
 
@@ -62,7 +65,7 @@
 
 					//root node
 					if( attrs.angularTreeview ) {
-					
+
 						//create tree object if not exists
 						scope[treeId] = scope[treeId] || {};
 
