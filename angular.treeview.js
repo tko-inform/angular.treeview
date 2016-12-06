@@ -22,12 +22,12 @@
 	</div>
 */
 
-(function ( angular ) {
+(function (angular) {
 	'use strict';
 
-	var m = angular.module( 'angularTreeview', [] );
+	var m = angular.module('angularTreeview', []);
 
-	m.service( 'treeModelUtils', [function() {
+	m.service('treeModelUtils', [function () {
 		var service = {
 
 			/**
@@ -39,7 +39,7 @@
 			 * @param idField The name of id property on each node.
 			 * @param result The reference to the object, that will be filled with values.
 			 */
-			saveToMap: function(initialNodeList, idField, result) {
+			saveToMap: function (initialNodeList, idField, result) {
 				initialNodeList.forEach(function (item) {
 					if (item[idField]) {
 						result[item[idField]] = item;
@@ -61,7 +61,7 @@
 			 * @param idField The name of id property on each node.
 			 * @param result The list of the selected nodes (except for its subnodes).
 			 */
-			selectedAsList: function(initialItemsMap, widgetModel, idField, result) {
+			selectedAsList: function (initialItemsMap, widgetModel, idField, result) {
 				widgetModel.forEach(function (possiblyChecked) {
 					if (possiblyChecked[idField] && possiblyChecked.nodeState && possiblyChecked.nodeState.isChecked) {
 						var theSameItemInInitialState = initialItemsMap[possiblyChecked[idField]];
@@ -83,10 +83,10 @@
 			 * @param selectedIds The ids of the nodes you want to make checked.
 			 * @param idField The name of id property on each node.
 			 */
-			checkSelected: function(widgetModel, selectedIds, idField) {
+			checkSelected: function (widgetModel, selectedIds, idField) {
 				widgetModel.forEach(function (item) {
 					item.nodeState = {
-						__id: 'cs_' + Math.ceil(Math.random()*100000) // For debugging purposes.
+						__id: 'cs_' + Math.ceil(Math.random() * 100000) // For debugging purposes.
 					};
 					item.nodeState.isChecked = (selectedIds.indexOf(item[idField]) >= 0);
 					if (!item.nodeState.isChecked && item.children && item.children.length > 0) {
@@ -98,14 +98,14 @@
 		return service;
 	}]);
 
-	m.directive( 'treeModel', ['$compile', function( $compile ) {
+	m.directive('treeModel', ['$compile', function ($compile) {
 		return {
 			restrict: 'A',
 			scope: {
 				treeModel: '=',
 				depth: '=?'
 			},
-			link: function ( scope, element, attrs ) {
+			link: function (scope, element, attrs) {
 				//tree id
 				var treeId = attrs.treeId;
 
@@ -120,7 +120,7 @@
 							// Но на случай, если нет, нужно заранее создать эти объекты.
 							if (!item.nodeState) {
 								item.nodeState = {
-									__id: '_' + Math.ceil(Math.random()*100000) // For debugging purposes.
+									__id: '_' + Math.ceil(Math.random() * 100000) // For debugging purposes.
 								};
 							}
 						});
@@ -186,27 +186,27 @@
 
 
 				//check tree id, tree model
-				if( treeId && scope.treeModel ) {
+				if (treeId && scope.treeModel) {
 
 					//root node
-					if( attrs.angularTreeview ) {
+					if (attrs.angularTreeview) {
 
 						//create tree object if not exists
 						parentScope[treeId] = parentScope[treeId] || {};
 
 						//if node head clicks,
-						parentScope[treeId].selectNodeHead = parentScope[treeId].selectNodeHead || function( selectedNode ){
+						parentScope[treeId].selectNodeHead = parentScope[treeId].selectNodeHead || function (selectedNode) {
 
 							//Collapse or Expand
 							selectedNode.collapsed = !selectedNode.collapsed;
 						};
 
 						//if node label clicks,
-						parentScope[treeId].selectNodeLabel = parentScope[treeId].selectNodeLabel || function( selectedNode ){
 
-							if (!useCheckboxes) {
+						if (!useCheckboxes) {
+							parentScope[treeId].selectNodeLabel = parentScope[treeId].selectNodeLabel || function (selectedNode) {
 								//remove highlight from previous node
-								if( parentScope[treeId].currentNode && parentScope[treeId].currentNode.selected ) {
+								if (parentScope[treeId].currentNode && parentScope[treeId].currentNode.selected) {
 									parentScope[treeId].currentNode.selected = undefined;
 								}
 
@@ -215,9 +215,11 @@
 
 								//set currentNode
 								parentScope[treeId].currentNode = selectedNode;
-							}
+							};
+						} else {
+							parentScope[treeId].selectNodeLabel = parentScope[treeId].selectNodeLabel || function (selectedNode) {};
+						}
 
-						};
 					}
 
 					scope[treeId].selectNodeHead = function (selectedNode) {
@@ -228,9 +230,9 @@
 					};
 
 					//Rendering template.
-					element.html('').append( $compile( template )( scope ) );
+					element.html('').append($compile(template)(scope));
 				}
 			}
 		};
 	}]);
-})( angular );
+})(angular);
