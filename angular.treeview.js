@@ -103,7 +103,6 @@
 			restrict: 'A',
 			scope: {
 				treeModel: '=',
-				parentState: '=?',
 				depth: '=?'
 			},
 			link: function ( scope, element, attrs ) {
@@ -148,12 +147,18 @@
 
 				if (useCheckboxes) {
 					initializeStates(scope.tree);
-
-					scope.parentState = undefined;
-					scope.$watch(attrs.parentState, function(value){
-						scope.parentState = value;
-					});
 				}
+
+				scope.hasCheckedParent = function (node) {
+					var iteratedNode = node;
+					while (iteratedNode.parent) {
+						if (iteratedNode.parent.nodeState && iteratedNode.parent.nodeState.isChecked) {
+							return true;
+						}
+						iteratedNode = iteratedNode.parent;
+					}
+					return false;
+				};
 
 				//tree template
 				var template =
@@ -162,14 +167,13 @@
 							'<i class="collapsed" data-ng-show="node.' + nodeChildren + '.length && node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
 							'<i class="expanded" data-ng-show="node.' + nodeChildren + '.length && !node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
 							'<i class="normal" data-ng-hide="node.' + nodeChildren + '.length"></i> ' +
-							(useCheckboxes ? '<input type="checkbox" data-ng-model="node.nodeState.isChecked" data-ng-disabled="node.disabled" ng-if="!parentState.isChecked"/>' : '') +
-							(useCheckboxes ? '<input type="checkbox" checked="checked" disabled="disabled" ng-if="parentState.isChecked"/>' : '') +
+							(useCheckboxes ? '<input type="checkbox" data-ng-model="node.nodeState.isChecked" data-ng-disabled="node.disabled" ng-if="!hasCheckedParent(node)"/>' : '') +
+							(useCheckboxes ? '<input type="checkbox" checked="checked" disabled="disabled" ng-if="hasCheckedParent(node)"/>' : '') +
 							(useCheckboxes ? '&nbsp;' : '') +
 
 							'<span data-ng-class="node.selected" data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}</span>' +
 							'<div data-ng-hide="node.collapsed" ' +
 									'data-use-checkboxes="'+ useCheckboxes +'" ' +
-									(useCheckboxes ? 'data-parent-state="node.nodeState" ' : '') +
 									'data-depth="' + (depth + 1) + '" ' +
 									'data-tree-id="' + treeId + '" ' +
 									'data-tree-model="node.' + nodeChildren + '" ' +
