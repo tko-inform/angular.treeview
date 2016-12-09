@@ -54,22 +54,37 @@
 
             /**
              * It constructs the list with the original node objects, that was not modified by the widget.
-             * Currently it does not return the subnodes of the selected nodes.
+             * It does not return the subnodes of the selected nodes by default.
              *
              * @param initialItemsMap The map with all nodes, where the key is the node id.
              * @param widgetModel Contains the copies of the nodes.
              * @param idField The name of id property on each node.
              * @param result The list of the selected nodes (except for its subnodes).
+             * @param includeSubnodes If you want to include subnodes, set `true`.
              */
-            selectedAsList: function (initialItemsMap, widgetModel, idField, result) {
+            selectedAsList: function (initialItemsMap, widgetModel, idField, result, includeSubnodes) {
+                function allChildrenAsSelected(initialItemsMap, widgetModel, idField, result) {
+                    widgetModel.forEach(function (item) {
+                        var theSameItemInInitialState = initialItemsMap[item[idField]];
+                        if (theSameItemInInitialState && result.indexOf(theSameItemInInitialState) < 0) {
+                            result.push(theSameItemInInitialState);
+                        }
+                        if (item.children && item.children.length > 0) {
+                            allChildrenAsSelected(initialItemsMap, item.children, idField, result);
+                        }
+                    });
+                }
                 widgetModel.forEach(function (possiblyChecked) {
                     if (possiblyChecked[idField] && possiblyChecked.nodeState && possiblyChecked.nodeState.isChecked) {
                         var theSameItemInInitialState = initialItemsMap[possiblyChecked[idField]];
                         if (theSameItemInInitialState && result.indexOf(theSameItemInInitialState) < 0) {
                             result.push(theSameItemInInitialState);
                         }
+                        if (includeSubnodes && possiblyChecked.children && possiblyChecked.children.length > 0) {
+                            allChildrenAsSelected(initialItemsMap, possiblyChecked.children, idField, result);
+                        }
                     } else if (possiblyChecked.children && possiblyChecked.children.length > 0) {
-                        service.selectedAsList(initialItemsMap, possiblyChecked.children, idField, result);
+                        service.selectedAsList(initialItemsMap, possiblyChecked.children, idField, result, includeSubnodes);
                     }
                 });
             },
