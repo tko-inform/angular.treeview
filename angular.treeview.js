@@ -92,20 +92,21 @@
             /**
              * When you copy the tree, that the widget will use,
              * you may want to make some checkboxes checked.
-             * The method ignores the state of subnodes of the checked nodes.
+             * The method ignores the state of subnodes of the checked nodes by default.
              *
              * @param widgetModel
              * @param selectedIds The ids of the nodes you want to make checked.
              * @param idField The name of id property on each node.
+             * @param checkSubnodes Set true to disable the ignoring of subnodes of checked nodes.
              */
-            checkSelected: function (widgetModel, selectedIds, idField) {
+            checkSelected: function (widgetModel, selectedIds, idField, checkSubnodes) {
                 widgetModel.forEach(function (item) {
                     item.nodeState = {
                         __id: 'cs_' + Math.ceil(Math.random() * 100000) // For debugging purposes.
                     };
                     item.nodeState.isChecked = (selectedIds.indexOf(item[idField]) >= 0);
-                    if (!item.nodeState.isChecked && item.children && item.children.length > 0) {
-                        service.checkSelected(item.children, selectedIds, idField);
+                    if ((!item.nodeState.isChecked || checkSubnodes) && item.children && item.children.length > 0) {
+                        service.checkSelected(item.children, selectedIds, idField, checkSubnodes);
                     }
                 });
             }
@@ -147,6 +148,9 @@
 
                 //node label
                 var nodeLabel = attrs.nodeLabel || 'label';
+                
+                //node customStyle
+                var nodeCustomStyle = attrs.nodeCustomStyle || 'customStyle';
 
                 //children
                 var nodeChildren = attrs.nodeChildren || 'children';
@@ -179,14 +183,14 @@
                 var template =
                     '<ul>' +
                     '<li data-ng-repeat="node in tree">' +
-                    '<i class="collapsed" data-ng-show="node.' + nodeChildren + '.length && node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
-                    '<i class="expanded" data-ng-show="node.' + nodeChildren + '.length && !node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
+                    '<i class="glyphicon glyphicon-triangle-right" data-ng-show="node.' + nodeChildren + '.length && node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
+                    '<i class="glyphicon glyphicon-triangle-bottom" data-ng-show="node.' + nodeChildren + '.length && !node.collapsed" data-ng-click="' + treeId + '.selectNodeHead(node)"></i>' +
                     '<i class="normal" data-ng-hide="node.' + nodeChildren + '.length"></i> ' +
                     (useCheckboxes ? '<input type="checkbox" data-ng-model="node.nodeState.isChecked" data-ng-disabled="node.disabled" ng-if="!hasCheckedParent(node)"/>' : '') +
                     (useCheckboxes ? '<input type="checkbox" checked="checked" disabled="disabled" ng-if="hasCheckedParent(node)"/>' : '') +
                     (useCheckboxes ? '&nbsp;' : '') +
 
-                    '<span data-ng-class="node.selected" data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}</span>' +
+                    '<span data-ng-class="node.selected" data-ng-style="node.' + nodeCustomStyle + '" data-ng-click="' + treeId + '.selectNodeLabel(node)">{{node.' + nodeLabel + '}}</span>' +
                     '<div data-ng-hide="node.collapsed" ' +
                     'data-use-checkboxes="' + useCheckboxes + '" ' +
                     'data-depth="' + (depth + 1) + '" ' +
